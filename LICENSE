@@ -1,0 +1,40 @@
+# 许可协议 · License
+
+本项目**不是 OSI 意义上的开源项目**。它是「源码公开、禁止商用」的许可模式（source-available, non-commercial）。
+
+## 一、适用范围
+
+| 部分 | 内容 | 许可 |
+|---|---|---|
+| 代码 | `tools/` 下全部 `.py` | PolyForm Noncommercial License 1.0.0 |
+| 文本 | `source/` `drafts/` `polished/` `docs/` `data/` 及根目录 `.md` | CC BY-NC-SA 4.0 |
+
+## 二、核心条款（中文摘要）
+
+**允许**
+
+- 个人阅读、学习、研究、教学使用。
+- 复制、修改、再分发，但须保留本许可与 `NOTICE.md`。
+- 基于本项目再创作，须以相同许可发布（ShareAlike）。
+
+**禁止**
+
+- **任何形式的商业使用。** 包括但不限于：售卖、付费订阅、付费墙后发布、插入广告、打包进商业产品、用于商业培训或咨询交付。
+- 移除或规避本许可与来源标注。
+- 声称本项目的产出是曹雪芹原作、是《癸酉本》真本、或可作为红学证据。
+
+**注意**
+
+- `source/` 下的原文并非本项目原创，其权利状态不明。本项目**无权**就该部分授予任何许可，仅按"研究引用"收录。若权利人提出异议，将立即移除。
+- 演绎作品中属于本项目作者新增的表达，按上表授权；不属于作者的部分，作者无权授权。
+
+## 三、正式文本
+
+- PolyForm Noncommercial 1.0.0：<https://polyformproject.org/licenses/noncommercial/1.0.0/>
+- CC BY-NC-SA 4.0：<https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode.zh-hans>
+
+两者冲突时，以更严格者为准；本文件的中文摘要仅供理解，不构成对正式文本的修改。
+
+---
+
+Copyright (c) 2026 Robin0525. All rights reserved except as granted above.

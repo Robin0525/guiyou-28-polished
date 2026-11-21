@@ -82,7 +82,7 @@ def main():
         body = re.sub(r"\n{2,}", "\n", body).strip()
         path = os.path.join(outdir, "ch%03d.md" % n)
         with open(path, "w", encoding="utf-8") as f:
-            f.write("---\n回次: %d\n回目: %s\n字数: %d\n来源: 癸酉本石头记后28回三周年纪念版（凡第六版）\n---\n\n# 第%s回 %s\n\n%s\n"
+            f.write("---\n回次: %d\n回目: %s\n字数: %d\n来源: 《石头记癸酉本（后二十八回）三周年纪念版·凡第六版》，发布 何莉莉，整理 刘俊俊，2011-09\n---\n\n# 第%s回 %s\n\n%s\n"
                     % (n, title, len(body), _cn(n), title, body))
         print("ch%03d %s %d 字" % (n, title, len(body)))
 
