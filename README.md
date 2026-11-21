@@ -53,7 +53,11 @@
 - **裸「道」翻倍、「笑道」腰斩**（72.29 vs 34.59；14.66 vs 26.74）
 - **>40 字长句占比翻倍**（22.9% vs 11.2%）
 
-同时测出一个"没差异"：对白占比 39.4% vs 39.6%。说明它的叙事节奏是像的——问题在腔调，不在结构。
+同时测出对白占比：正文口径 **46.0% vs 39.4%**，癸酉本对白偏少。
+
+> 口径更正：初版把校注本的注释（占 19.1%）也算进正文，得出"对白占比几乎一致"的错误结论。剔除注释后已推翻，详见 `docs/STYLE_MODEL.md` 顶部。
+
+定性层的蒸馏结果见 **[docs/文风档案·红楼梦前80回.md](docs/文风档案·红楼梦前80回.md)**（用 `book-style-distill` skill 产出，16 维逐条附原文例句）。
 
 ## 目录
 
@@ -65,7 +69,7 @@ data/       baseline.json  lexicon.tsv  style_model.json  patterns.tsv
             dialogue_tags.tsv  char_profiles.tsv  changes.json
 tools/      extract  build_baseline  build_style_model  polish
             check_style  style_distance  corpus
-docs/       STYLE_MODEL  STYLE_GUIDE  METHOD  验收报告  风格距离
+docs/       STYLE_MODEL 文风档案·红楼梦前80回 STYLE_GUIDE METHOD  验收报告  风格距离
 ```
 
 ## 用法
