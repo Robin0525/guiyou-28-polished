@@ -133,5 +133,36 @@ class TestMetrics(unittest.TestCase):
         self.assertEqual(verse(src), verse(pol), "标题诗与原文不一致")
 
 
+class TestLayout(unittest.TestCase):
+    """排版：段落之间必须有空行，否则 Markdown 里会挤成一片。"""
+
+    def test_paragraph_gap(self):
+        files = sorted(glob.glob(os.path.join(ROOT, "polished/ch*.md")))
+        self.assertTrue(files, "polished/ 下没有稿本")
+        for f in files:
+            lines = read(f).split("\n")
+            # 跳过 YAML 头部（--- ... ---）与标题行
+            start = 0
+            if lines and lines[0].strip() == "---":
+                for j in range(1, len(lines)):
+                    if lines[j].strip() == "---":
+                        start = j + 1
+                        break
+            for i in range(start, len(lines) - 1):
+                a, b = lines[i].strip(), lines[i + 1].strip()
+                if len(a) > 30 and len(b) > 30:
+                    self.fail(
+                        "%s 第 %d、%d 行是两段正文却无空行分隔，"
+                        "渲染时会挤成一段：\n  %s\n  %s"
+                        % (os.path.basename(f), i + 1, i + 2, a[:30], b[:30])
+                    )
+
+    def test_no_trailing_blank_run(self):
+        for f in sorted(glob.glob(os.path.join(ROOT, "polished/ch*.md"))):
+            self.assertLessEqual(
+                read(f).count("\n\n\n"), 0, "%s 有多余连续空行" % os.path.basename(f)
+            )
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
