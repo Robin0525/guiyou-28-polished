@@ -1,0 +1,50 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 依赖（仅标准库）
+        run: python -c "import sys; print(sys.version)"
+
+      - name: 回归测试（口径 / 保护 / 指标）
+        run: python -m unittest discover -s tests -v
+
+      - name: 重算基线，确认与提交版本一致
+        run: |
+          python tools/build_baseline.py corpus/ /tmp/baseline.json >/dev/null
+          python - <<'PY'
+          import json
+          a=json.load(open("data/baseline.json",encoding="utf-8"))
+          b=json.load(open("/tmp/baseline.json",encoding="utf-8"))
+          assert a["chars"]==b["chars"], f"baseline 过期：{a['chars']} != {b['chars']}"
+          assert a["chars"]==590940, f"口径异常：{a['chars']}"
+          print("baseline OK", a["chars"])
+          PY
+
+      - name: 指标验收（仅作报告，不作门禁）
+        run: python tools/check_style.py source/ drafts/ --out /tmp/report.md || true
+
+      - name: 风格距离（仅作报告）
+        run: python tools/style_distance.py source/ drafts/ polished/ --out /tmp/dist.md || true
+
+      - name: 上传报告
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            /tmp/report.md
+            /tmp/dist.md
+          if-no-files-found: ignore

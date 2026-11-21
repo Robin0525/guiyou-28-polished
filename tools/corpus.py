@@ -67,3 +67,16 @@ def load_dir(d):
         t = open(f, encoding="utf-8").read()
         out.append(re.sub(r"^---[\s\S]*?---", "", t, count=1))
     return "\n".join(out)
+
+
+def load_corpus(d):
+    """读取 split_chapters.py 产出的分回正文（已剔注释与校记）。
+
+    这是唯一的正文口径来源：753,918 字含 19.1% 注释，用它算基线会把
+    所有密度指标稀释，是不可用的。
+    """
+    out = []
+    for f in sorted(glob.glob(os.path.join(d, "h*.txt"))):
+        lines = open(f, encoding="utf-8").read().split("\n")
+        out.append("\n".join(lines[1:]))  # 首行是回目，不入正文
+    return "\n".join(out), len(out)

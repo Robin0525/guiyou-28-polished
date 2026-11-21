@@ -1,0 +1,2 @@
+# 本项目无需 pip 安装任何第三方包：全部脚本只用 Python 标准库。
+# 环境与外部依赖说明见 DEPENDENCIES.md

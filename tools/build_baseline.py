@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""从人文社红研所校注本 epub 提取前八十回的语言基线指标。
+"""从前八十回正文提取语言基线指标。
 
 用法:
-    python tools/build_baseline.py <hongloumeng.epub> data/baseline.json
+    python tools/build_baseline.py corpus/ data/baseline.json        # 推荐：已剔注释
+    python tools/build_baseline.py <hongloumeng.epub> data/baseline.json  # 旧法，含注释，勿用
 
 产出 JSON 供 polish.py / check_style.py 读取，指标口径见 docs/METHOD.md。
 """
 import json
+import os
 import re
 import statistics
 import sys
 import zipfile
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 CN = "一二三四五六七八九十百"
 PARTICLES = ["罢", "吧", "啊", "吗", "呢"]
@@ -75,8 +79,15 @@ def main():
         print(__doc__)
         sys.exit(1)
     src, out = sys.argv[1], sys.argv[2]
-    text, nch = front80(load_epub(src))
-    total = len(text)
+    if os.path.isdir(src):
+        from corpus import load_corpus
+        text, nch = load_corpus(src)
+        source_note = "corpus/ 分回正文（已剔注释与校记）"
+    else:
+        text, nch = front80(load_epub(src))
+        source_note = "epub 原文（含注释，密度指标会被稀释，不推荐）"
+        print("警告：从 epub 直读会把 19.1%% 注释算进正文，密度指标系统性偏低。请改用 corpus/。")
+    total = len(text.replace("\n", ""))  # 口径：不含换行符，与文档一致
 
     def rate(word):
         return round(text.count(word) / total * 10000, 3)
@@ -88,6 +99,7 @@ def main():
     baseline = {
         "edition": "人民文学出版社《红楼梦》 中国艺术研究院红楼梦研究所校注（彩皮定本）",
         "scope": "前八十回正文",
+        "source": source_note,
         "chapter_units": nch,
         "chars": total,
         "particles": {

@@ -18,7 +18,7 @@ import statistics
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from corpus import front80, load_epub  # noqa: E402
+from corpus import front80, load_corpus, load_epub  # noqa: E402
 
 FUNCTION_WORDS = list("的了便又也都只倒竟才还就因遂方且却将把被与和及若虽则乃着过得地之其此这那么呢罢")
 
@@ -84,8 +84,14 @@ def main():
     epub, outdir = sys.argv[1], sys.argv[2]
     os.makedirs(outdir, exist_ok=True)
 
-    text, nch = front80(load_epub(epub))
-    n = len(text)
+    if os.path.isdir(epub):
+        text, nch = load_corpus(epub)
+        source_note = "corpus/ 分回正文（已剔注释与校记）"
+    else:
+        text, nch = front80(load_epub(epub))
+        source_note = "epub 原文（含注释，不推荐）"
+        print("警告：从 epub 直读会把 19.1% 注释算进正文，请改用 corpus/。")
+    n = len(text.replace("\n", ""))
     sents = sentences(text)
     lens = [len(s) for s in sents]
     spans, dchars = dialogue(text)
@@ -177,6 +183,7 @@ def main():
             "edition": "人民文学出版社《红楼梦》 中国艺术研究院红楼梦研究所校注（彩皮定本）",
             "scope": "前八十回正文",
             "chars": n,
+            "source": source_note,
             "chapter_units": nch,
             "generated_by": "tools/build_style_model.py",
         },
