@@ -21,6 +21,11 @@ def strip_tags(html):
 
 def cn2int(s):
     d = {c: i for i, c in enumerate("〇一二三四五六七八九")}
+    d["零"] = 0
+    s = s.strip()
+    # 逐位数字串：一一九→119、一〇八→108
+    if s and all(c in d for c in s) and not re.search(r"[十百]", s):
+        return int("".join(str(d[c]) for c in s))
     if "百" in s:
         a, _, b = s.partition("百")
         return (d.get(a, 1) if a else 1) * 100 + (cn2int(b) if b else 0)
