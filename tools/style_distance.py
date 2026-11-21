@@ -87,25 +87,37 @@ def main():
 
     lines = ["# 风格距离报告", "",
              "基线：%s，%s，%d 字。" % (model["meta"]["edition"], model["meta"]["scope"], model["meta"]["chars"]),
-             "偏离度 = 各特征 |ln(文本/基线)| 的均值，0 为完全一致；仅用于同方向比较，不是精度指标。", "",
+             "偏离度 = 各特征 |ln(文本/基线)| 的均值，0 为完全一致。（高频）= 仅统计基线 ≥5/万 的特征，剔除稀疏噪声。",
+             "**不同字数、不同范围的稿本不可横向比较**（1 回 vs 28 回，对白占比与稀疏特征都会失真）。", "",
              "## 总览", "",
-             "| 稿本 | 字数 | 偏离度 | 对白占比 | 平均句长 | 句数 |",
-             "|---|---|---|---|---|---|"]
+             "| 稿本 | 字数 | 偏离度 | 偏离度(高频) | 对白占比 | 平均句长 | 句数 |",
+             "|---|---|---|---|---|---|---|"]
 
-    score = {}
+    score, score_hi = {}, {}
     for d, r in res.items():
-        ds = []
-        ds += [dev(r["fw"][w], base_fw[w]) for w in base_fw]
+        ds, hi = [], []
+        for w in base_fw:
+            x = dev(r["fw"][w], base_fw[w])
+            ds.append(x)
+            if base_fw[w] >= 5:
+                hi.append(x)
         ds += [dev(r["frames"][k], base_frames[k]) for k in base_frames if k in r["frames"]]
+        hi += [dev(r["frames"][k], base_frames[k]) for k in base_frames
+               if k in r["frames"] and base_frames[k] >= 1]
         ds += [dev(r["tags"].get(k, 0), v) for k, v in base_tags.items()]
-        ds.append(dev(r["avg_sent"], L["L4_sentence"]["avg"]))
-        ds.append(dev(r["dialogue_ratio"], L["L5_voice"]["dialogue_ratio"]))
+        hi += [dev(r["tags"].get(k, 0), v) for k, v in base_tags.items() if v >= 5]
+        e = dev(r["avg_sent"], L["L4_sentence"]["avg"])
+        o = dev(r["dialogue_ratio"], L["L5_voice"]["dialogue_ratio"])
+        ds += [e, o]
+        hi += [e, o]
         score[d] = statistics.mean(ds)
+        score_hi[d] = statistics.mean(hi)
 
     for d, r in res.items():
-        mark = "**%.2f**" % score[d] if r["chars"] >= 5000 else "—（样本不足）"
-        lines.append("| %s | %d | %s | %.1f%% | %.1f | %d |" % (
-            d, r["chars"], mark, r["dialogue_ratio"] * 100, r["avg_sent"], r["sent_count"]))
+        mark = "%.2f" % score[d] if r["chars"] >= 20000 else "—"
+        markhi = "**%.2f**" % score_hi[d] if r["chars"] >= 20000 else "**%.2f**（样本 1 万字，仅供参考）" % score_hi[d]
+        lines.append("| %s | %d | %s | %s | %.1f%% | %.1f | %d |" % (
+            d, r["chars"], mark, markhi, r["dialogue_ratio"] * 100, r["avg_sent"], r["sent_count"]))
 
     # 功能词偏差
     lines += ["", "## L1 功能词：偏差最大的八项", "",
