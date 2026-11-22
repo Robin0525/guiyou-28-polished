@@ -146,7 +146,7 @@ python tools/style_distance.py source/ drafts/ polished/ --out docs/风格距离
 
 ## 进度
 
-见 [progress.md](progress.md)。规则初稿 28/28 回；人工精修目前仅 ch081 开头节选（约 1200 / 10226 字）。
+见 [progress.md](progress.md)。规则初稿 28/28 回；人工逐回精修 28/28 回（第八十一至一百零八回），逐回字数、句长、便与一面的密度、段长、感叹号密度均记录在案。
 
 ## 免责
 
