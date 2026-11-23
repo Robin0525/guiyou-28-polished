@@ -53,28 +53,45 @@ def register_fonts():
         pdfmetrics.registerFont(f)
 
 
+def _tokens(text):
+    """把「字＋后随标点」绑成不可分单元；开引号则与后一字绑定。"""
+    toks, i, n = [], 0, len(text)
+    while i < n:
+        j = i + 1
+        while j < n and text[j] in NO_START:
+            j += 1
+        if text[i] in NO_END and j < n:
+            k = j + 1
+            while k < n and text[k] in NO_START:
+                k += 1
+            j = k
+        toks.append(text[i:j])
+        i = j
+    return toks
+
+
 def wrap_cjk(text, width, font, size, indent=0.0):
-    """逐字断行，处理避头尾。返回行列表。"""
+    """按不可分单元断行：标点不起行、开引号不收行。"""
     lines, cur, w = [], "", indent
-    for ch in text:
-        cw = pdfmetrics.stringWidth(ch, font, size)
-        if cur and w + cw > width + 0.01:
-            if ch in NO_START:                       # 标点不许起行：挤进本行
-                cur += ch
-                lines.append(cur)
-                cur, w = "", 0.0
-                continue
-            if cur[-1] in NO_END and len(cur) > 1:   # 开引号不许收行：退一字
-                last = cur[-1]
-                lines.append(cur[:-1])
-                cur = last + ch
+    limit = width - indent - 1.5 if indent else width - 1.5
+    for tk in _tokens(text):
+        tw = pdfmetrics.stringWidth(tk, font, size)
+        if cur and w + tw > limit:
+            if tk[0] in NO_END and len(cur) > 1:     # 开引号不起行
+                k = len(cur) - 1                     # 连同「末字＋后随标点」整体下移
+                while k > 0 and cur[k] in NO_START:
+                    k -= 1
+                tail = cur[k:]
+                lines.append(cur[:k])
+                cur = tail + tk
                 w = pdfmetrics.stringWidth(cur, font, size)
                 continue
             lines.append(cur)
-            cur, w = ch, cw
+            cur, w = tk, tw
+            limit = width - 1.5
         else:
-            cur += ch
-            w += cw
+            cur += tk
+            w += tw
     if cur:
         lines.append(cur)
     return lines
@@ -228,7 +245,7 @@ def _build(out_path, version, toc_entries, front=0):
         "四、正文中少量原稿误植已改正（如「丫鬓」改「丫鬟」、「阂府」改「阖府」），"
         "逐条列于《勘误与保留说明》。",
         "五、正文后附《前八十回批语摘录与版本备忘录》，系原稿编者所附，"
-        "不属第百零八回正文，单列为附录。",
+        "不属第百零八回正文，单列为附录。附录内原文与批语混排，不另标色。",
         "六、本书文本以 CC BY-NC-SA 4.0 发布，禁止商业使用。",
     ]:
         S.append(P(t, note, "Song", 9.5, W))
