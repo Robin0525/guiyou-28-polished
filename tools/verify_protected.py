@@ -73,6 +73,10 @@ def main():
     for f in sorted(glob.glob(os.path.join(ROOT, "source/ch*.md"))):
         ch = os.path.basename(f)[:5]
         src = open(f, encoding="utf-8").read()
+        if ch == "ch108":                      # 附录已单列，这里只核正文
+            k = src.find("（全书完）")
+            if k > 0:
+                src = src[:k]
         pol_path = os.path.join(ROOT, "polished", ch + ".md")
         if not os.path.exists(pol_path):
             miss.append((ch, "整回", "polished 缺失"))
@@ -105,8 +109,28 @@ def main():
                      sum(len(x) for x in hp) + sum(len(x) for x in inline) + sum(len(x) for x in crit),
                      n_ok))
 
+    # 附录（原在 ch108 尾部，已单列）
+    app_src_p = os.path.join(ROOT, "source/ch108.md")
+    app_pol_p = os.path.join(ROOT, "polished/appendix.md")
+    if os.path.exists(app_pol_p):
+        s108 = open(app_src_p, encoding="utf-8").read()
+        k = s108.find("（全书完）")
+        if k > 0:
+            app_src = s108[k + len("（全书完）"):]
+            pol = norm(open(app_pol_p, encoding="utf-8").read())
+            crit = [norm(c) for c in re.findall(r"（[^）]{4,}）", app_src)]
+            ok = 0
+            for c in crit:
+                if c in pol:
+                    ok += 1
+                else:
+                    miss.append(("附录", "批语", c[:24]))
+            rows.append(("附录", "前八十回批语摘录与版本备忘录", 0, 0, len(crit),
+                         sum(len(c) for c in crit), ok + 0))
+            n_app = len(crit)
+
     total_ok = sum(r[6] for r in rows)
-    total_b = sum(r[2] + r[3] + r[4] + 1 for r in rows)
+    total_b = sum(r[2] + r[3] + r[4] + (0 if r[0] == "附录" else 1) for r in rows)
 
     L = ["# 回目·诗·批语 核验报告", "",
          "本项目的规则是：**回目、诗、词、批语一字不改**，只重写行文。"
@@ -121,7 +145,7 @@ def main():
          "- **批语**：圆括号内不短于四字的注释，及方括号批。", "",
          "## 汇总", "",
          "| 项目 | 数量 |", "|---|---|",
-         "| 回目 | %d 条 |" % len(rows),
+         "| 回目 | %d 条 |" % sum(1 for r in rows if r[0] != "附录"),
          "| 回前诗 | %d 首 |" % sum(r[2] for r in rows),
          "| 正文引文（诗、词、曲、书信、礼单） | %d 处 |" % sum(r[3] for r in rows),
          "| 批语（含行间批、回前批、方括号批） | %d 条 |" % sum(r[4] for r in rows),

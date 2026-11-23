@@ -151,10 +151,12 @@ python tools/style_distance.py source/ drafts/ polished/ --out docs/风格距离
 
 ## 下载
 
-- [**PDF（A5，393 页）**](https://github.com/Robin0525/guiyou-28-polished/releases/latest) —— 含目录、书签、页眉页码，字体已嵌入
-- [**纯文本 Markdown**](https://github.com/Robin0525/guiyou-28-polished/releases/latest) —— 二十八回合并版，便于检索
+- [**PDF（A5，391 页）**](https://github.com/Robin0525/guiyou-28-polished/releases/latest) —— 含目录、书签、页眉页码，字体已嵌入
+- [**纯文本 Markdown**](https://github.com/Robin0525/guiyou-28-polished/releases/latest) —— 二十八回＋附录合并版，便于检索
 
-最新版本：`v261123.01`。重新生成 PDF：`python tools/build_pdf.py`（需 reportlab 与华文宋体／黑体／楷体）。
+最新版本：`v261123.02`。重新生成 PDF：`python tools/build_pdf.py`（需 reportlab 与思源字体）。
+
+排版约定：正文宋体，诗词黑体，回目隶书，批语楷体着朱；标点避头尾（行首不放收尾标点）；《前八十回批语摘录与版本备忘录》单列为附录，不计入第百零八回。
 
 ## 进度
 
