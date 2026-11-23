@@ -149,6 +149,13 @@ python tools/style_distance.py source/ drafts/ polished/ --out docs/风格距离
 
 前四项由规则解决。后四项是语法层，机器改不了，只能在 `polished/` 里逐句重写——这也是本项目真正的工作量所在。
 
+## 下载
+
+- [**PDF（A5，393 页）**](https://github.com/Robin0525/guiyou-28-polished/releases/latest) —— 含目录、书签、页眉页码，字体已嵌入
+- [**纯文本 Markdown**](https://github.com/Robin0525/guiyou-28-polished/releases/latest) —— 二十八回合并版，便于检索
+
+最新版本：`v261123.01`。重新生成 PDF：`python tools/build_pdf.py`（需 reportlab 与华文宋体／黑体／楷体）。
+
 ## 进度
 
 见 [progress.md](progress.md)。规则初稿 28/28 回；人工逐回精修 28/28 回（第八十一至一百零八回），逐回字数、句长、便与一面的密度、段长、感叹号密度均记录在案。

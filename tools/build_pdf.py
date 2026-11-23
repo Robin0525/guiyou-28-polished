@@ -3,7 +3,7 @@
 """把 polished/ 的二十八回合排成一本书，输出 A5 PDF。
 
 用法:
-    python tools/build_pdf.py                     # 默认 dist/石头记·后二十八回·润色本.pdf
+    python tools/build_pdf.py                     # 默认 dist/guiyou-28-polished-v261123.01.pdf
     python tools/build_pdf.py --version v261123.01
 """
 import argparse
@@ -246,7 +246,7 @@ def build(out_path, version=VERSION):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=os.path.join(ROOT, "dist",
-                                                  "石头记·后二十八回·润色本.pdf"))
+                                                  "guiyou-28-polished-v261123.01.pdf"))
     ap.add_argument("--version", default=VERSION)
     a = ap.parse_args()
     os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True)
