@@ -151,7 +151,7 @@ python tools/style_distance.py source/ drafts/ polished/ --out docs/风格距离
 
 ## 下载
 
-- [**PDF（A5，403 页）**](https://github.com/Robin0525/guiyou-28-polished/releases/latest) —— 含目录、书签、页眉页码，字体已嵌入
+- [**PDF（A5，401 页）**](https://github.com/Robin0525/guiyou-28-polished/releases/latest) —— 含目录、书签、页眉页码，字体已嵌入
 - [**纯文本 Markdown**](https://github.com/Robin0525/guiyou-28-polished/releases/latest) —— 二十八回＋附录一＋附录二合并版，便于检索
 
 最新版本：`v261123.03`。重新生成 PDF：`python tools/build_pdf.py`（需 reportlab 与系统宋体、黑体、隶书、楷体）。

@@ -212,16 +212,19 @@ def _build(out_path, version, toc_entries, front=0):
                                alignment=TA_CENTER, spaceAfter=14)
     note = ParagraphStyle("Note", fontName="Song", fontSize=9.5, leading=17,
                           alignment=TA_JUSTIFY, wordWrap=None, spaceAfter=6)
-    ap_sec = ParagraphStyle("ApSec", fontName="Hei", fontSize=10, leading=17,
-                            spaceBefore=10, spaceAfter=4)
-    ap_item = ParagraphStyle("ApItem", fontName="Song", fontSize=9.5, leading=16.5,
-                             leftIndent=24, rightIndent=0, wordWrap=None, spaceAfter=1)
+    ap_body = ParagraphStyle("ApBody", fontName="Song", fontSize=10.5, leading=17.6,
+                             firstLineIndent=21, alignment=TA_JUSTIFY, wordWrap=None,
+                             spaceAfter=1.5)
+    ap_sec = ParagraphStyle("ApSec", fontName="Hei", fontSize=10, leading=16.5,
+                            spaceBefore=9, spaceAfter=3)
+    ap_item = ParagraphStyle("ApItem", fontName="Song", fontSize=9.5, leading=16,
+                             leftIndent=24, rightIndent=0, wordWrap=None, spaceAfter=0.5)
     url_st = ParagraphStyle("Url", fontName="Song", fontSize=9.5, leading=16.5,
                             leftIndent=21, rightIndent=0, wordWrap=None, spaceAfter=6)
 
     for st in (body, verse, verse_label, crit, ch_no, ch_mu, ch_mu_last,
                qb_title, qb_list, toc1, toc2, toc_title, note, ap_sec, ap_item,
-               url_st):
+               url_st, ap_body):
         st.splitLongWords = 0          # 行已手工断好，禁止 reportlab 二次切
 
     doc = Book(out_path, pagesize=A5,
@@ -307,7 +310,7 @@ def _build(out_path, version, toc_entries, front=0):
                 elif p.startswith("·"):               # 条目：缩进，保留圆点
                     S.append(P(p.replace("·", "·\u00a0", 1), ap_item, "Song", 9.5, W - 24))
                 else:
-                    S.append(P(p, body, "Song", 10.5, W, indent=21))
+                    S.append(P(p, ap_body, "Song", 10.5, W, indent=21))
             return
         m = re.match(r"^(第[^回]*回)\s+(.+)$", title)
         if m and " " in m.group(2):
