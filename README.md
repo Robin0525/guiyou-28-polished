@@ -151,12 +151,17 @@ python tools/style_distance.py source/ drafts/ polished/ --out docs/风格距离
 
 ## 下载
 
-- [**PDF（A5，391 页）**](https://github.com/Robin0525/guiyou-28-polished/releases/latest) —— 含目录、书签、页眉页码，字体已嵌入
-- [**纯文本 Markdown**](https://github.com/Robin0525/guiyou-28-polished/releases/latest) —— 二十八回＋附录合并版，便于检索
+- [**PDF（A5，403 页）**](https://github.com/Robin0525/guiyou-28-polished/releases/latest) —— 含目录、书签、页眉页码，字体已嵌入
+- [**纯文本 Markdown**](https://github.com/Robin0525/guiyou-28-polished/releases/latest) —— 二十八回＋附录一＋附录二合并版，便于检索
 
-最新版本：`v261123.02`。重新生成 PDF：`python tools/build_pdf.py`（需 reportlab 与思源字体）。
+最新版本：`v261123.03`。重新生成 PDF：`python tools/build_pdf.py`（需 reportlab 与系统宋体、黑体、隶书、楷体）。
 
-排版约定：正文宋体，诗词黑体，回目隶书，批语楷体着朱；标点避头尾（行首不放收尾标点）；《前八十回批语摘录与版本备忘录》单列为附录，不计入第百零八回。
+排版约定：正文宋体，诗词黑体，回目隶书，批语楷体着朱；标点避头尾（行首不放收尾标点，行尾不放起首标点）。
+
+附录两种，均不计入第百零八回：
+
+- **附录一　前八十回批语摘录与版本备忘录**（原稿编者所附 6,574 字）
+- **附录二　勘误与保留说明**（读者版；工程版另见 [docs/勘误与保留说明.md](docs/勘误与保留说明.md)）
 
 ## 进度
 

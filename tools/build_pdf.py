@@ -5,10 +5,10 @@
 排版约定：
 - 正文宋体，诗词黑体，回目隶书，批语楷体朱色；
 - 标点避头尾（行首不放收尾标点，行尾不放起首标点），逐行手工断；
-- 附录单列，不计入第百零八回。
+- 附录单列（附录一 批语摘录与版本备忘录、附录二 勘误与保留说明），不计入第百零八回。
 
 用法:
-    python tools/build_pdf.py --version v261123.02
+    python tools/build_pdf.py --version v261123.03
 """
 import argparse
 import glob
@@ -35,7 +35,7 @@ FONTS = {
     "Kai": (r"C:\Windows\Fonts\STKAITI.TTF", None),   # 楷体
 }
 
-VERSION = "v261123.02"
+VERSION = "v261123.03"
 TITLE = "石头记（癸酉本）后二十八回"
 SUBTITLE = "按前八十回文风重写行文·润色本"
 FRONT_PAGES = 4
@@ -53,10 +53,31 @@ def register_fonts():
         pdfmetrics.registerFont(f)
 
 
+ASCII = set("0123456789abcdefghijklmnopqrstuvwxyz"
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ._~:/?#@!$&*+=%-")
+
+
 def _tokens(text):
-    """把「字＋后随标点」绑成不可分单元；开引号则与后一字绑定。"""
+    """把「字＋后随标点」绑成不可分单元；ASCII 连写（网址、西文）整串不拆。
+
+    任何以行首禁则标点开头的单元，一律并入前一个单元，确保标点不起行。
+    """
     toks, i, n = [], 0, len(text)
+
+    def push(tok):
+        if tok and tok[0] in NO_START and toks:
+            toks[-1] += tok                 # 标点并入前一个单元
+        elif tok:
+            toks.append(tok)
+
     while i < n:
+        if text[i] in ASCII:                 # 网址与西文：整串作一个单元
+            j = i + 1
+            while j < n and text[j] in ASCII:
+                j += 1
+            push(text[i:j])
+            i = j
+            continue
         j = i + 1
         while j < n and text[j] in NO_START:
             j += 1
@@ -65,7 +86,7 @@ def _tokens(text):
             while k < n and text[k] in NO_START:
                 k += 1
             j = k
-        toks.append(text[i:j])
+        push(text[i:j])
         i = j
     return toks
 
@@ -77,15 +98,6 @@ def wrap_cjk(text, width, font, size, indent=0.0):
     for tk in _tokens(text):
         tw = pdfmetrics.stringWidth(tk, font, size)
         if cur and w + tw > limit:
-            if tk[0] in NO_END and len(cur) > 1:     # 开引号不起行
-                k = len(cur) - 1                     # 连同「末字＋后随标点」整体下移
-                while k > 0 and cur[k] in NO_START:
-                    k -= 1
-                tail = cur[k:]
-                lines.append(cur[:k])
-                cur = tail + tk
-                w = pdfmetrics.stringWidth(cur, font, size)
-                continue
             lines.append(cur)
             cur, w = tk, tw
             limit = width - 1.5
@@ -112,8 +124,11 @@ def load_book():
     for f in sorted(glob.glob(os.path.join(ROOT, "polished/ch*.md"))):
         paras = load_md(f)
         chs.append((paras[0].lstrip("# ").strip(), paras[1:]))
-    app = load_md(os.path.join(ROOT, "polished/appendix.md"))
-    return chs, (app[0].lstrip("# ").strip(), app[1:])
+    apps = []
+    for f in sorted(glob.glob(os.path.join(ROOT, "polished/appendix*.md"))):
+        paras = load_md(f)
+        apps.append((paras[0].lstrip("# ").strip(), paras[1:]))
+    return chs, apps
 
 
 def esc(s):
@@ -157,13 +172,13 @@ class Book(BaseDocTemplate):
             canv.line(20 * mm, A5[1] - 17 * mm, A5[0] - 20 * mm, A5[1] - 17 * mm)
             canv.setFont("Song", 9)
             canv.setFillGray(0.3)
-            canv.drawCentredString(A5[0] / 2, 12 * mm, str(doc.page - FRONT_PAGES))
+            canv.drawCentredString(A5[0] / 2, 12 * mm, str(doc.page - doc.front))
         canv.restoreState()
 
 
 def _build(out_path, version, toc_entries, front=0):
     register_fonts()
-    chs, app = load_book()
+    chs, apps = load_book()
 
     def P(text, style, font, size, width, indent=0.0):
         text = text.replace(" ", "\u00a0")      # 空格不参与断行
@@ -197,9 +212,16 @@ def _build(out_path, version, toc_entries, front=0):
                                alignment=TA_CENTER, spaceAfter=14)
     note = ParagraphStyle("Note", fontName="Song", fontSize=9.5, leading=17,
                           alignment=TA_JUSTIFY, wordWrap=None, spaceAfter=6)
+    ap_sec = ParagraphStyle("ApSec", fontName="Hei", fontSize=10, leading=17,
+                            spaceBefore=10, spaceAfter=4)
+    ap_item = ParagraphStyle("ApItem", fontName="Song", fontSize=9.5, leading=16.5,
+                             leftIndent=24, rightIndent=0, wordWrap=None, spaceAfter=1)
+    url_st = ParagraphStyle("Url", fontName="Song", fontSize=9.5, leading=16.5,
+                            leftIndent=21, rightIndent=0, wordWrap=None, spaceAfter=6)
 
     for st in (body, verse, verse_label, crit, ch_no, ch_mu, ch_mu_last,
-               qb_title, qb_list, toc1, toc2, toc_title, note):
+               qb_title, qb_list, toc1, toc2, toc_title, note, ap_sec, ap_item,
+               url_st):
         st.splitLongWords = 0          # 行已手工断好，禁止 reportlab 二次切
 
     doc = Book(out_path, pagesize=A5,
@@ -233,27 +255,34 @@ def _build(out_path, version, toc_entries, front=0):
 
     S.append(Paragraph("几点说明", ParagraphStyle("NT", fontName="Li", fontSize=14,
                                                   leading=22, spaceAfter=12)))
-    for t in [
-        "一、本书是《石头记》癸酉本后二十八回的润色本。原稿的回目、诗、词、批语一字未动，"
-        "所改者仅为行文——句法、词汇、标点，按人民文学出版社《红楼梦》前八十回"
-        "（中国艺术研究院红楼梦研究所校注本）的语言统计特征重写。",
-        "二、原稿的文字问题不代为遮掩：回目中的错字（如「行狭义」「大瘐岭」）、"
-        "批语中的误植（如「如梗在喉」）、回前诗不合近体诗格律，均按原样保留，"
-        "另见项目文档《勘误与保留说明》。",
-        "三、原稿并非曹雪芹手笔，其真伪与来源在学界有争议。本书只处理语言，"
-        "不主张任何考证结论；以本书作为「曹雪芹原文」或红学证据的引用，均属误用。",
-        "四、正文中少量原稿误植已改正（如「丫鬓」改「丫鬟」、「阂府」改「阖府」），"
-        "逐条列于《勘误与保留说明》。",
-        "五、正文后附《前八十回批语摘录与版本备忘录》，系原稿编者所附，"
-        "不属第百零八回正文，单列为附录。附录内原文与批语混排，不另标色。",
-        "六、本书文本以 CC BY-NC-SA 4.0 发布，禁止商业使用。",
-    ]:
-        S.append(P(t, note, "Song", 9.5, W))
+    notes = [
+        ("p", "一、本书是《石头记》癸酉本后二十八回的润色本。原稿的回目、诗、词、批语一字未动，"
+              "所改者仅为行文——句法、词汇、标点，按人民文学出版社《红楼梦》前八十回"
+              "（中国艺术研究院红楼梦研究所校注本）的语言统计特征重写。"),
+        ("p", "二、原稿的文字问题不代为遮掩：回目中的错字（如「行狭义」「大瘐岭」）、"
+              "批语中的误植（如「如梗在喉」）、回前诗不合近体诗格律，均按原样保留，"
+              "逐条说明见附录二《勘误与保留说明》。"),
+        ("p", "三、原稿并非曹雪芹手笔，其真伪与来源在学界有争议。本书只处理语言，"
+              "不主张任何考证结论；以本书作为「曹雪芹原文」或红学证据的引用，均属误用。"),
+        ("p", "四、正文中少量原稿误植已改正（如「丫鬓」改「丫鬟」、「阂府」改「阖府」），"
+              "原稿与改后对照亦见附录二。"),
+        ("p", "五、正文后附《前八十回批语摘录与版本备忘录》，系原稿编者所附，"
+              "不属第百零八回正文，单列为附录一。附录内原文与批语混排，不另标色。"),
+        ("p", "六、本书文本以 CC BY-NC-SA 4.0 发布，禁止商业使用。"),
+        ("p", "七、本书的校订底稿、逐回校订记录与核验工具，均开源发布在下列地址："),
+        ("url", "https://github.com/Robin0525/guiyou-28-polished"),
+        ("p", "发现讹误、异文或体例问题，欢迎在仓库中提出，以便后续版本修订。"),
+    ]
+    for kind, t in notes:
+        if kind == "url":
+            S.append(P(t, url_st, "Song", 9.5, W - 21))
+        else:
+            S.append(P(t, note, "Song", 9.5, W))
     S.append(PageBreak())
 
     S.append(Paragraph("目　录", toc_title))
     entries = toc_entries if toc_entries is not None else \
-        [(t, 0) for t, _ in chs] + [("附录　" + app[0].split("　", 1)[-1], 0)]
+        [(t, 0) for t, _ in chs] + [(t, 0) for t, _ in apps]
     rows = [[P(x, toc1, "Song", 9, W - 34), Paragraph(str(n), toc2)] for x, n in entries]
     tbl = Table(rows, colWidths=[W - 34, 34])
     tbl.setStyle(TableStyle([
@@ -273,7 +302,12 @@ def _build(out_path, version, toc_entries, front=0):
             S.append(Paragraph(esc(no), ch_no))
             S.append(Paragraph(esc(mu or title), ch_mu_last))
             for p in paras:
-                S.append(P(p, body, "Song", 10.5, W, indent=21))
+                if p.startswith("§"):                 # 小节标题
+                    S.append(P(p.lstrip("§").strip(), ap_sec, "Hei", 10, W))
+                elif p.startswith("·"):               # 条目：缩进，保留圆点
+                    S.append(P(p.replace("·", "·\u00a0", 1), ap_item, "Song", 9.5, W - 24))
+                else:
+                    S.append(P(p, body, "Song", 10.5, W, indent=21))
             return
         m = re.match(r"^(第[^回]*回)\s+(.+)$", title)
         if m and " " in m.group(2):
@@ -313,8 +347,9 @@ def _build(out_path, version, toc_entries, front=0):
             S.append(PageBreak())
         emit(title, paras)
 
-    S.append(PageBreak())
-    emit(app[0], app[1])
+    for title, paras in apps:
+        S.append(PageBreak())
+        emit(title, paras)
 
     doc.front = front
     doc.build(S)
