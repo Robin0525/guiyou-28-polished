@@ -125,10 +125,11 @@ class TestMetrics(unittest.TestCase):
             self.skipTest("缺文件")
 
         def verse(p):
+            # 只比字，不比排版空行——空行是给 Markdown 渲染用的
             t = read(p)
             i = t.find("诗云：")
             j = t.find("话说", i)
-            return t[i:j].strip()
+            return re.sub(r"\s", "", t[i:j])
 
         self.assertEqual(verse(src), verse(pol), "标题诗与原文不一致")
 
