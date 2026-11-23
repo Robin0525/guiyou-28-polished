@@ -164,5 +164,21 @@ class TestLayout(unittest.TestCase):
             )
 
 
+class TestProtectedText(unittest.TestCase):
+    """回目、诗、批语一字未动——全量核验，不是抽样。"""
+
+    def test_all_protected_blocks_intact(self):
+        import subprocess
+        r = subprocess.run(
+            [sys.executable, os.path.join(ROOT, "tools", "verify_protected.py")],
+            capture_output=True, text=True, cwd=ROOT,
+        )
+        self.assertEqual(
+            r.returncode, 0,
+            "回目／诗／批语出现改动或缺失：\n" + (r.stdout[-1500:] or r.stderr[-1500:]),
+        )
+        self.assertIn("缺失或改动 | 0 处", r.stdout, "核验汇总异常")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
